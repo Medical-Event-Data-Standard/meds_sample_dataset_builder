@@ -24,7 +24,7 @@ def test_error_cases():
         output_is_file.touch()
 
         out = subprocess.run(
-            cmd_args + [f"output_dir={str(output_is_file)}"],
+            [*cmd_args, f"output_dir={output_is_file!s}"],
             shell=False,
             check=False,
             capture_output=True,
@@ -38,7 +38,7 @@ def test_error_cases():
 
         (out_data / "data1.parquet").touch()
         out = subprocess.run(
-            cmd_args + [f"output_dir={str(output_is_existing)}"],
+            [*cmd_args, f"output_dir={output_is_existing!s}"],
             shell=False,
             check=False,
             capture_output=True,
@@ -46,7 +46,7 @@ def test_error_cases():
         assert out.returncode != 0, "Should fail because output data subdir exists"
 
         out = subprocess.run(
-            cmd_args + [f"output_dir={str(output_is_existing)}", "do_overwrite=True"],
+            [*cmd_args, f"output_dir={output_is_existing!s}", "do_overwrite=True"],
             shell=False,
             check=False,
             capture_output=True,

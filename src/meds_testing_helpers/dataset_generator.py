@@ -1,15 +1,14 @@
 import logging
 import shutil
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import hydra
 import numpy as np
 import polars as pl
-from meds import DatasetMetadata
-from meds import __version__ as meds_version
 from meds import (
+    DatasetMetadata,
     birth_code,
     code_field,
     death_code,
@@ -22,6 +21,7 @@ from meds import (
     train_split,
     tuning_split,
 )
+from meds import __version__ as meds_version
 from omegaconf import DictConfig
 
 from . import GEN_YAML, __package_name__, __version__
@@ -386,7 +386,7 @@ class MEDSDataDFGenerator:
             )
             timedeltas = [np.timedelta64(int(s * 1e6), "us") for s in sec_between_events]
 
-            for n, timedelta in zip(subject_samples["num_measurements_per_event"], timedeltas):
+            for n, timedelta in zip(subject_samples["num_measurements_per_event"], timedeltas, strict=False):
                 codes, values = self._sample_code_val(
                     size=n,
                     vocab_size=self.dynamic_vocab_size,
@@ -643,7 +643,7 @@ class MEDSDatasetGenerator:
                 )
 
         if self.dataset_name is None:
-            self.dataset_name = f"MEDS_Sample_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            self.dataset_name = f"MEDS_Sample_{datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S')}"
 
     def sample(self, N_subjects: int, rng: np.random.Generator) -> MEDSDataset:
         n_shards = N_subjects // self.shard_size if self.shard_size is not None else 2
@@ -666,7 +666,7 @@ class MEDSDatasetGenerator:
             etl_name=__package_name__,
             etl_version=__version__,
             meds_version=meds_version,
-            created_at=datetime.now().isoformat(),
+            created_at=datetime.now(tz=timezone.utc).isoformat(),
             extension_columns=[],
         )
 
@@ -730,7 +730,7 @@ def main(cfg: DictConfig):
     logger.info(f"Generating dataset with {cfg.N_subjects} subjects.")
     dataset = G.sample(cfg.N_subjects, rng)
 
-    logger.info(f"Saving dataset to root directory {str(output_dir.resolve())}.")
+    logger.info(f"Saving dataset to root directory {output_dir.resolve()!s}.")
     dataset.write(output_dir)
 
     logger.info("Done.")

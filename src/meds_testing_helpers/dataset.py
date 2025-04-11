@@ -2,14 +2,7 @@ import json
 import logging
 from io import StringIO
 from pathlib import Path
-from typing import Any
-
-from yaml import load as load_yaml
-
-try:
-    from yaml import CLoader as Loader
-except ImportError:  # pragma: no cover
-    from yaml import Loader
+from typing import Any, ClassVar
 
 import polars as pl
 import pyarrow as pa
@@ -32,6 +25,12 @@ from meds import (
     subject_splits_filepath,
     time_field,
 )
+from yaml import load as load_yaml
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:  # pragma: no cover
+    from yaml import Loader
 
 logger = logging.getLogger(__name__)
 
@@ -701,27 +700,27 @@ class MEDSDataset:
         ValueError: dataset_metadata must be provided if root_dir is None
     """
 
-    CSV_TS_FORMAT = "%m/%d/%Y, %H:%M:%S"
+    CSV_TS_FORMAT: ClassVar[str] = "%m/%d/%Y, %H:%M:%S"
 
-    PL_DATA_SCHEMA = {
+    PL_DATA_SCHEMA: ClassVar[dict[str, pl.DataType]] = {
         subject_id_field: pl.Int64,
         time_field: pl.Datetime("us"),
         code_field: pl.String,
         numeric_value_field: pl.Float32,
     }
 
-    PL_CODE_METADATA_SCHEMA = {
+    PL_CODE_METADATA_SCHEMA: ClassVar[dict[str, pl.DataType]] = {
         code_field: pl.String,
         description_field: pl.String,
         parent_codes_field: pl.List(pl.String),
     }
 
-    PL_SUBJECT_SPLIT_SCHEMA = {
+    PL_SUBJECT_SPLIT_SCHEMA: ClassVar[dict[str, pl.DataType]] = {
         subject_id_field: pl.Int64,
         "split": pl.String,
     }
 
-    PL_LABEL_SCHEMA = {
+    PL_LABEL_SCHEMA: ClassVar[dict[str, pl.DataType]] = {
         subject_id_field: pl.Int64,
         prediction_time_field: pl.Datetime("us"),
         "boolean_value": pl.Boolean,
@@ -730,10 +729,10 @@ class MEDSDataset:
         "categorical_value": pl.String,
     }
 
-    TIME_FIELDS = {time_field, prediction_time_field}
+    TIME_FIELDS: ClassVar[set[str]] = {time_field, prediction_time_field}
 
-    TASK_LABELS_SUBDIR = "task_labels"
-    TASK_NAMES_FN = ".task_names.json"
+    TASK_LABELS_SUBDIR: ClassVar[str] = "task_labels"
+    TASK_NAMES_FN: ClassVar[str] = ".task_names.json"
 
     def __init__(
         self,
@@ -764,10 +763,10 @@ class MEDSDataset:
         self.task_labels = task_labels
 
         # These will throw errors if the data is malformed.
-        self.data_shards
-        self.code_metadata
-        self.subject_splits
-        self.dataset_metadata
+        self.data_shards  # noqa: B018
+        self.code_metadata  # noqa: B018
+        self.subject_splits  # noqa: B018
+        self.dataset_metadata  # noqa: B018
 
     @classmethod
     def parse_csv(cls, csv: str, **schema_updates) -> pl.DataFrame:
@@ -1311,7 +1310,7 @@ class MEDSDataset:
         if self.root_dir is None:
             return None
         else:
-            return sorted(list((self.root_dir / data_subdirectory).rglob("*.parquet")))
+            return sorted((self.root_dir / data_subdirectory).rglob("*.parquet"))
 
     @property
     def _pl_shards(self) -> SHARDED_DF_T:
@@ -1404,7 +1403,7 @@ class MEDSDataset:
             task_names = json.loads(self.task_names_fp.read_text())
             for task in task_names:
                 task_dir = self.task_root_dir / task
-                out[task] = sorted(list(task_dir.rglob("*.parquet")))
+                out[task] = sorted(task_dir.rglob("*.parquet"))
             return out
 
     @property
@@ -1494,16 +1493,16 @@ class MEDSDataset:
                     task_name: {shard: df.to_dict(as_series=False) for shard, df in shards.items()}
                     for task_name, shards in self._pl_task_labels.items()
                 }
-            kwargs_str = ", ".join(f"{k}={repr(v)}" for k, v in kwargs.items())
+            kwargs_str = ", ".join(f"{k}={v!r}" for k, v in kwargs.items())
             return f"{cls_name}({kwargs_str})"
         else:
-            return f"{cls_name}(root_dir={repr(self.root_dir)})"
+            return f"{cls_name}(root_dir={self.root_dir!r})"
 
     def __str__(self) -> str:
         lines = []
         lines.append(f"{self.__class__.__name__}:")
         if self.root_dir is not None:
-            lines.append(f"stored in root_dir: {str(self.root_dir.resolve())}")
+            lines.append(f"stored in root_dir: {self.root_dir.resolve()!s}")
         lines.append("dataset_metadata:")
         for k, v in self.dataset_metadata.items():
             lines.append(f"  - {k}: {v}")
@@ -1540,7 +1539,4 @@ class MEDSDataset:
             return False
         if self.subject_splits != other.subject_splits:
             return False
-        if self.task_labels != other.task_labels:
-            return False
-
-        return True
+        return self.task_labels == other.task_labels

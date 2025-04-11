@@ -10,8 +10,8 @@ def test_dataset_config_inference(simple_static_MEDS):
         output_fp = Path(temp_dir) / "generated_config.yaml"
         cmd = [
             "infer_MEDS_sample_gen_config",
-            f"dataset_dir={str(simple_static_MEDS.resolve())}",
-            f"output_fp={str(output_fp.resolve())}",
+            f"dataset_dir={simple_static_MEDS.resolve()!s}",
+            f"output_fp={output_fp.resolve()!s}",
         ]
 
         out = subprocess.run(cmd, shell=False, check=False, capture_output=True)
@@ -36,8 +36,8 @@ def test_dataset_config_inference_errors(simple_static_MEDS):
 
         cmd = [
             "infer_MEDS_sample_gen_config",
-            f"dataset_dir={str(simple_static_MEDS.resolve())}",
-            f"output_fp={str(output_fp.resolve())}",
+            f"dataset_dir={simple_static_MEDS.resolve()!s}",
+            f"output_fp={output_fp.resolve()!s}",
         ]
 
         out = subprocess.run(cmd, shell=False, check=False, capture_output=True)

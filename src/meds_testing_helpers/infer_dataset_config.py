@@ -97,10 +97,7 @@ def main(cfg: DictConfig):
         tuning_frac = tuning_cnt / total_cnt
         held_out_frac = 1 - train_frac - tuning_frac
 
-    if cfg.seed is not None:
-        rng = np.random.default_rng(cfg.seed)
-    else:
-        rng = np.random.default_rng()
+    rng = np.random.default_rng(cfg.seed) if cfg.seed is not None else np.random.default_rng()
 
     rng.shuffle(shards)
     shards_to_examine = shards[:3]

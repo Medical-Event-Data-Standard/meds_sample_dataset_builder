@@ -69,7 +69,7 @@ def generate_MEDS(request, dataset_spec: str) -> Path:
             f"seed={seed}",
             f"N_subjects={N}",
             "do_overwrite=False",
-            f"output_dir={str(data_dir)}",
+            f"output_dir={data_dir!s}",
             "dataset_spec/data_generator=sample",
         ]
 

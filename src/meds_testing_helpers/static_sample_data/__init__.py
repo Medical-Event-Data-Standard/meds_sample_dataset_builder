@@ -19,4 +19,4 @@ for yaml_path in static_dataset_yamls:
 for n, val in exported_yamls.items():
     globals()[n] = val
 
-__all__ = list(exported_yamls.keys()) + ["exported_yamls"]
+__all__ = [*list(exported_yamls.keys()), "exported_yamls"]

@@ -13,6 +13,6 @@ INF_YAML = files(__package_name__).joinpath("configs/infer_dataset_config.yaml")
 __all__ = [
     "GEN_YAML",
     "INF_YAML",
-    "__version__",
     "__package_name__",
+    "__version__",
 ]

@@ -23,7 +23,7 @@ def is_NUM(x: Any) -> bool:
         >>> is_NUM("a")
         False
     """
-    return isinstance(x, (int, float))
+    return isinstance(x, int | float)
 
 
 def is_POSITIVE_NUM(x: Any) -> bool:
